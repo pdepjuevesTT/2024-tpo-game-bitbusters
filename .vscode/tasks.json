@@ -1,0 +1,11 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "run",
+      "type": "shell",
+      "command": "wollok run -g 'main.TetrisWollok' --skipValidations -p g:/WollokTetris",
+      "problemMatcher": []
+    }
+  ]
+}

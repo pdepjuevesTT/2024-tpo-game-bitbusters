@@ -1,22 +1,22 @@
-# Nombre del juego (<- borrar y completar)
+# Tetris
 
 ## Equipo de desarrollo
 
-- Alguien
-- Persona
-- etc.
+- Geronimo Herrera
+- Santiago De Franceschi
+- Franco Alanoca Villarreal
 
 ## Capturas
 
-(agregar)
+(TODO)
 
 ## Reglas de Juego / Instrucciones
 
-(Escribirlas)
+(TODO)
 
 
 ## Otros
 
-- Curso/Facultad
-- Versión de wollok
-- Una vez terminado, no tenemos problemas en que el repositorio sea público / queremos manternerlo privado
+- Realizado en la UTN, durante la cursada de Paradigmas de Programación (curso k2033)
+- Por las dudas se agregó el ejecutable de la **versión 0.2.6 de Wollok**, con la que fue hecho este juego
+- Una vez terminado, no tenemos problemas en que el repositorio sea público
