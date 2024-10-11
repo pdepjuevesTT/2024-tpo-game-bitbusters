@@ -1,7 +1,11 @@
 object utils {
-  method random(min, max) {
-    return (min - 1).randomUpTo(max).roundUp()
-  }
+  method random(min, max) = (min - 1).randomUpTo(max).roundUp()
+
+  method vectorSum(v1, v2) = game.at(v1.x() + v2.x(), v1.y() + v2.y())
+
+  method v2ToString(v) = "(" + v.x().toString() + ";" + v.y().toString() + ")"
+
+  method xyToString(x,y) = self.v2ToString(game.at(x,y))
 }
 
 object color {

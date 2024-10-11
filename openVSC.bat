@@ -1,3 +1,1 @@
-@echo off
 code .
-exit

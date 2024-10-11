@@ -4,5 +4,5 @@
 # Wollok Log
 *.log
 
-# Ignore Wollok instalation as it cannot be uploaded directly to GitHub
-Wollok/wollok.exe
+wollok.exe
+openVSC.bat

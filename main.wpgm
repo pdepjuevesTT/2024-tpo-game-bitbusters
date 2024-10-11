@@ -36,8 +36,12 @@ program TetrisWollok {
     keys = wasdKeys
   )
 
-  const player2 = new Player(
-    board = board2,
-    keys = arrowKeys
-  )
+  keyboard.b().onPressDo({player1.onGravity()})
+
+
+  // const player2 = new Player(
+  //   board = board2,
+  //   keys = arrowKeys
+  // )
+
 }

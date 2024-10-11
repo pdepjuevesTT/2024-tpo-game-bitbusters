@@ -3,13 +3,9 @@ import constants.*
 class GameObject
 {
   var property position = game.at(0,0)
+  
+  method move(deltaX, deltaY) { position = game.at(position.x() + deltaX.coerceToInteger(), position.y() + deltaY.coerceToInteger()) }
 
-  var property frozen = false
-  method move(deltaX, deltaY) {
-    if(frozen) {return}
-    position = game.at(position.x() + deltaX.coerceToInteger(), position.y() + deltaY.coerceToInteger())
-    return
-  }
   method tp(x,y){
     position = game.at(x,y)
   }
@@ -34,36 +30,43 @@ class BlockSet
 
   const property board
 
+  var property settled = false
+
   method initialize()
 
-  method move(deltaX, deltaY) {
-    if(self.outOfBounds(deltaX, deltaY)) { return }
-
-
+  method moveAll(deltaX, deltaY) {
     blocks.forEach({ elem =>
-      elem.move(deltaX, deltaY)
+      if(elem != 0) elem.move(deltaX, deltaY)
     })
-    return
   }
 
-  method outOfBounds(deltaX, deltaY) {
-    var newX
-    var newY
-    var outOfBounds = false
+  method checkCollision(horizontal, delta, minimum, maximum) {
+    var actualPos
+    var newP
+    var newRelP
+    var collision = false
 
     blocks.forEach({ block =>
-      if (!outOfBounds) {
-        newX = block.position().x() + deltaX
-        newY = block.position().y() + deltaY
-        outOfBounds =
-           newX < self.board().downPin().x()
-        || newY < self.board().downPin().y()
-        || newX > self.board().upPin().x() - 1
-        || newY > self.board().upPin().y()
+      if(!collision) {
+        if(horizontal) { actualPos = block.position().x() }
+        else           { actualPos = block.position().y() }
+
+        newP = actualPos + delta
+        
+        if(horizontal) { newRelP = board.getRelativePosition(game.at(newP, block.position().y())) }
+        else           { newRelP = board.getRelativePosition(game.at(block.position().x(), newP)) }
+
+        collision = (newP < minimum || newP > maximum)
+        if(!collision && newRelP.y() != board.height()) { collision = (board.bitmap().get(newRelP.y()).blocks().get(newRelP.x()) != 0) }
       }
     })
-    return outOfBounds
+
+    return collision
   }
+
+  method horizontalCollision(deltaX) = self.checkCollision(true, deltaX, self.board().downPin().x(), self.board().upPin().x() - 1)
+
+  method verticalCollision(deltaY) = self.checkCollision(false, deltaY, self.board().downPin().y(), self.board().upPin().y() + 1)
 
   var property blocks = []
 }
@@ -84,6 +87,45 @@ class Tetromino inherits BlockSet
       game.addVisual(newBlock)
     })
   }
+
+  method move(deltaX, deltaY) {
+    if(self.preMoveChecks(deltaX, deltaY)) { return }
+
+    self.moveAll(deltaX, deltaY)
+
+    return
+  }
+
+  method preMoveChecks(deltaX, deltaY) {
+    if(deltaX != 0 && self.horizontalCollision(deltaX)) { return true }
+    
+    if(deltaY != 0 && self.verticalCollision(deltaY)) {
+      self.settlePiece()
+      return true
+    }
+
+    return false
+  }
+
+  method settlePiece() {
+    blocks.forEach({ block =>
+      const relativePos = board.getRelativePosition(block.position())
+      board.setValue(relativePos.y(), relativePos.x(), block)
+    })
+    settled = true
+  }
+
+  method checkAffectedLines() {
+    const affectedLines = new Set()
+    blocks.forEach({ block =>
+      affectedLines.add(board.getRelativePosition(block.position()).y())
+    })
+    
+    var clearedLines = 0
+    affectedLines.forEach({ lineIndex => 
+      if(board.checkLine(lineIndex)) clearedLines += 1
+    })
+  }
 }
 
 class Line inherits BlockSet
@@ -95,13 +137,33 @@ class Line inherits BlockSet
     size.times({i => blocks.add(0)})
   }
 
-  method isFull() {
-    return blocks.all({elem => elem != 0})
+  method drop() {
+    var relPos
+    self.moveAll(0, -1)
+    blocks.forEach({ block => 
+      if(block != 0) {
+        relPos = board.getRelativePosition(block.position())
+        board.setValue(self.index() - 1, relPos.x(), block)
+      }
+    })
+    self.clear(false)
   }
 
-  method clear() {
-    blocks = []
-    size.times(blocks.add(0))
+  method isFull() = blocks.all({elem => elem != 0})
+
+  method isEmpty() = blocks.all({elem => elem == 0})
+
+  method clear(removeVisual) {
+    if(removeVisual) blocks.forEach({ block => game.removeVisual(block) })
+    blocks.clear()
+    size.times({i => blocks.add(0)})
+  }
+  
+  method setValue(i, value) {
+    var newLine = blocks.take(i)
+    newLine.add(value)
+    newLine += blocks.drop(i + 1)
+    blocks = newLine
   }
 }
 
@@ -112,10 +174,25 @@ class Board
   var property width = upPin.x() - downPin.x()
   var property height = upPin.y() - downPin.y()
 
-  const property bitmap = []
+  var property bitmap = []
 
   method initialize() {
     height.times({i => bitmap.add(new Line(index = i-1, board = self, size = width))})
+  }
+
+  method getRelativePosition(position) = game.at(position.x() - downPin.x(), position.y() - downPin.y())
+
+  method setValue(lineIndex, blockIndex, value) = bitmap.get(lineIndex).setValue(blockIndex, value)
+
+  method checkLine(index) {
+    const line = bitmap.get(index)
+
+    if(line.isFull()) {
+      line.clear(true)
+      bitmap.forEach({ line => if(line.index() > index) { line.drop() }})
+      return true
+    }
+    return false
   }
 }
 
@@ -141,9 +218,18 @@ class Player
     self.setControls()
     self.pullPiece()
 
-    game.onTick(500, "gravity", {
-      activePiece.move(0,-1)
-    })
+    // game.onTick(500, "gravity", {
+    //   activePiece.move(0,-1)
+    //   if(activePiece.settled()) { self.pullPiece() }
+    // })
+  }
+
+  method onGravity() {
+    activePiece.move(0,-1)
+    if(activePiece.settled()) {
+      activePiece.checkAffectedLines()
+      self.pullPiece()
+    }
   }
 
   method pullPiece() {
@@ -153,7 +239,7 @@ class Player
     if (piecePool.isEmpty()) piecePool = tetrominos.debug_shuffle()
 
     activePiece = new Tetromino (
-      position = game.at(board.upPin().x().div(2), board.upPin().y()),
+      position = game.at((board.downPin().x() + board.upPin().x()).div(2) - 1, board.upPin().y()),
       data = shape,
       board = self.board()
     )
@@ -162,7 +248,7 @@ class Player
   method setControls() {
     keys.left().onPressDo({activePiece.move(-1,0)})
     keys.right().onPressDo({activePiece.move(1,0)})
-    keys.down().onPressDo({activePiece.move(0,-1)})
+    keys.down().onPressDo({self.onGravity()})
 
     //keys.up({activePiece.rotate()})
     //keys.store({self.store()})
