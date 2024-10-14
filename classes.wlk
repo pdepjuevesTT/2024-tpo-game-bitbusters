@@ -232,7 +232,7 @@ class Board
 }
 
 class UIPanel {
-  
+
 }
 
 class Keys
@@ -273,7 +273,7 @@ class Player
 
   method pullPiece() {
     const shape = piecePool.first()
-    piecePool.drop(1)
+    piecePool = piecePool.drop(1)
 
     if (piecePool.isEmpty()) piecePool = tetrominos.shuffle()
 
