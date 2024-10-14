@@ -75,4 +75,7 @@ object tetrominos {
   method shuffle() {return [self.t(),self.o(),self.j(),self.l(),self.i(),self.s(),self.z()].randomized()}
 
   method debug_shuffle() {return [self.o(),self.o(),self.o(),self.o(),self.o(),self.o(),self.o()]}
+ 
 }
+
+const scoreValues = [2, 5, 15, 60]

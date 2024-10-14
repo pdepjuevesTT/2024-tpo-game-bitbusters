@@ -75,6 +75,8 @@ class Tetromino inherits BlockSet
 {
   const property data
 
+  // ---------- INITIALIZE ----------
+
   override method initialize() {
     4.times({i => 
       const index = i - 1
@@ -87,6 +89,8 @@ class Tetromino inherits BlockSet
       game.addVisual(newBlock)
     })
   }
+
+  // ---------- MOVEMENT ----------
 
   method move(deltaX, deltaY) {
     if(self.preMoveChecks(deltaX, deltaY)) { return }
@@ -107,6 +111,8 @@ class Tetromino inherits BlockSet
     return false
   }
 
+  // ---------- SETTLE AND CLEAR LINES ----------
+
   method settlePiece() {
     blocks.forEach({ block =>
       const relativePos = board.getRelativePosition(block.position())
@@ -124,6 +130,23 @@ class Tetromino inherits BlockSet
     var clearedLines = 0
     affectedLines.forEach({ lineIndex => 
       if(board.checkLine(lineIndex)) clearedLines += 1
+    })
+
+    board.calculateScore(clearedLines)
+  }
+
+  // ---------- ROTATION ----------
+
+  method rotate() {
+    const pivot = blocks.first()
+    var dx
+    var dy
+
+    blocks.forEach({ block => 
+      dx = block.position().x() - pivot.position().x()
+      dy = block.position().y() - pivot.position().y()
+
+      block.position(game.at(pivot.position().x() + dy, pivot.position().y() - dx))
     })
   }
 }
@@ -176,6 +199,10 @@ class Board
 
   var property bitmap = []
 
+  var property points = 0
+  var property linesCompleted = 0
+  var property level = 1
+
   method initialize() {
     height.times({i => bitmap.add(new Line(index = i-1, board = self, size = width))})
   }
@@ -194,6 +221,18 @@ class Board
     }
     return false
   }
+
+  method calculateScore(clearedLines) {
+    if(clearedLines == 0 || clearedLines > 4) { return }
+    linesCompleted += clearedLines
+    points += constants.scoreValues.get(clearedLines - 1) * level
+    if(linesCompleted / 10 > level) { level = level + 1 }
+    return
+  }
+}
+
+class UIPanel {
+  
 }
 
 class Keys
@@ -210,7 +249,7 @@ class Player
   const keys
   
   const property board
-  var property piecePool = tetrominos.debug_shuffle()
+  var property piecePool = tetrominos.shuffle()
 
   var property activePiece = new Object()
 
@@ -236,7 +275,7 @@ class Player
     const shape = piecePool.first()
     piecePool.drop(1)
 
-    if (piecePool.isEmpty()) piecePool = tetrominos.debug_shuffle()
+    if (piecePool.isEmpty()) piecePool = tetrominos.shuffle()
 
     activePiece = new Tetromino (
       position = game.at((board.downPin().x() + board.upPin().x()).div(2) - 1, board.upPin().y()),
@@ -249,8 +288,8 @@ class Player
     keys.left().onPressDo({activePiece.move(-1,0)})
     keys.right().onPressDo({activePiece.move(1,0)})
     keys.down().onPressDo({self.onGravity()})
+    keys.up().onPressDo({activePiece.rotate()})
 
-    //keys.up({activePiece.rotate()})
-    //keys.store({self.store()})
+    //keys.store().onPressDo({self.store()})
   }
 }
