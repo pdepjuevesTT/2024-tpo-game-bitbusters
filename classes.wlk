@@ -1,9 +1,12 @@
 import constants.*
 
+// ||||||||||||||GAMEOBJECT|||||||||||||||||||
 class GameObject
 {
   var property position = game.at(0,0)
   
+  method initialize() { game.addVisual(self) }
+
   method move(deltaX, deltaY) { position = game.at(position.x() + deltaX.coerceToInteger(), position.y() + deltaY.coerceToInteger()) }
 
   method tp(x,y){
@@ -12,25 +15,25 @@ class GameObject
 
   var property sprite = ""
   method setSprite(newSprite) {
-    if(newSprite == "") sprite = "empty.png"
+    if(newSprite == "") sprite = sprites.empty()
     else sprite = newSprite
   }
 
   method image() = self.sprite()
 }
 
+// ||||||||||||||BLOCK|||||||||||||||||||
 class Block inherits GameObject
 {
 
 }
 
+// ||||||||||||||BLOCKSET|||||||||||||||||||
 class BlockSet
 {
   var property position = game.at(0,0)
 
   const property board
-
-  var property settled = false
 
   method initialize()
 
@@ -71,9 +74,12 @@ class BlockSet
   var property blocks = []
 }
 
+// ||||||||||||||TETROMINO|||||||||||||||||||
 class Tetromino inherits BlockSet
 {
   const property data
+
+  var property settled = false
 
   // ---------- INITIALIZE ----------
 
@@ -86,7 +92,6 @@ class Tetromino inherits BlockSet
         sprite = data.sprite()
       )
       blocks.add(newBlock)
-      game.addVisual(newBlock)
     })
   }
 
@@ -103,12 +108,13 @@ class Tetromino inherits BlockSet
   method preMoveChecks(deltaX, deltaY) {
     if(deltaX != 0 && self.horizontalCollision(deltaX)) { return true }
     
-    if(deltaY != 0 && self.verticalCollision(deltaY)) {
+    const shouldSettle = deltaY != 0 && self.verticalCollision(deltaY)
+
+    if(shouldSettle) {
       self.settlePiece()
-      return true
     }
 
-    return false
+    return shouldSettle
   }
 
   // ---------- SETTLE AND CLEAR LINES ----------
@@ -142,15 +148,42 @@ class Tetromino inherits BlockSet
     var dx
     var dy
 
-    blocks.forEach({ block => 
+    var blocked = false
+    var newPositions = []
+    var newRelPositions = []
+
+    blocks.forEach({ block =>
       dx = block.position().x() - pivot.position().x()
       dy = block.position().y() - pivot.position().y()
 
-      block.position(game.at(pivot.position().x() + dy, pivot.position().y() - dx))
+      newPositions.add(game.at(pivot.position().x() + dy, pivot.position().y() - dx))
     })
+
+    newPositions.forEach({pos => newRelPositions.add(board.getRelativePosition(pos))})
+
+    var i
+    var newPos
+    var newRelPos
+    4.times({_i => i = _i - 1
+      if(!blocked)
+      {
+        newPos = newPositions.get(i)
+        newRelPos = newRelPositions.get(i)
+
+        blocked = 
+            newPos.x() < board.downPin().x()
+        ||  newPos.x() > board.upPin().x() - 1
+        ||  newPos.y() < board.downPin().y()
+        ||  newPos.y() > board.upPin().y() + 1
+        ||  board.bitmap().get(newRelPos.y()).blocks().get(newRelPos.x()) != 0
+      }
+    })
+
+    if(!blocked) {4.times({_i => blocks.get(_i-1).position(newPositions.get(_i-1))})}
   }
 }
 
+// ||||||||||||||LINE|||||||||||||||||||
 class Line inherits BlockSet
 {
   var property index
@@ -190,6 +223,7 @@ class Line inherits BlockSet
   }
 }
 
+// ||||||||||||||BOARD|||||||||||||||||||
 class Board
 {
   const property downPin
@@ -199,12 +233,11 @@ class Board
 
   var property bitmap = []
 
-  var property points = 0
-  var property linesCompleted = 0
-  var property level = 1
 
   method initialize() {
     height.times({i => bitmap.add(new Line(index = i-1, board = self, size = width))})
+    uiPanel = new UIPanel(topLeftPin = game.at(upPin.x() + 1, upPin.y() - 1))
+    uiPanel.updateUI(points, linesCompleted, level)
   }
 
   method getRelativePosition(position) = game.at(position.x() - downPin.x(), position.y() - downPin.y())
@@ -214,36 +247,143 @@ class Board
   method checkLine(index) {
     const line = bitmap.get(index)
 
-    if(line.isFull()) {
+    const lineFull = line.isFull()
+
+    if(lineFull) {
       line.clear(true)
       bitmap.forEach({ line => if(line.index() > index) { line.drop() }})
-      return true
     }
-    return false
+    
+    return lineFull
   }
+
+  const linesToLevelup = 5
 
   method calculateScore(clearedLines) {
     if(clearedLines == 0 || clearedLines > 4) { return }
     linesCompleted += clearedLines
     points += constants.scoreValues.get(clearedLines - 1) * level
-    if(linesCompleted / 10 > level) { level = level + 1 }
+    if(linesCompleted / linesToLevelup > level) {
+      level = level + 1;
+      
+      if(level < 10) { self.updateTickSpeed() }
+    }
+
+    uiPanel.updateUI(points, linesCompleted, level)
     return
+  }
+
+  var property player = null
+
+  method setPlayer(playerRef) { player = playerRef }
+
+  method updateTickSpeed() {
+    const newTickMs = 700 - (0.6 * level)
+    player.updateGravity(newTickMs)
+  }
+
+  var property points = 0
+  var property linesCompleted = 0
+  var property level = 1
+
+  var property uiPanel = null
+}
+
+// ||||||||||||||UIPANEL|||||||||||||||||||
+class UIPanel {
+  const property topLeftPin
+
+  var property linesBoard = new Object()
+  var property pointsBoard = new Object()
+  var property levelBoard = new Object()
+  var property nextPieceBoard = new Object()
+
+  method initialize() {
+    const linesBoardPos = game.at(topLeftPin.x(), topLeftPin.y() - 1)
+    const pointsBoardPos = game.at(topLeftPin.x(), topLeftPin.y() - 4)
+    const levelBoardPos = game.at(topLeftPin.x(), topLeftPin.y() - 7)
+    const nextPieceBoardPos = game.at(topLeftPin.x(), topLeftPin.y() - 12)
+
+    linesBoard = new UINumberBoard(startPos = linesBoardPos, size = 4)
+    pointsBoard = new UINumberBoard(startPos = pointsBoardPos, size = 4)
+    levelBoard = new UINumberBoard(startPos = levelBoardPos, size = 4)
+    nextPieceBoard = new UIPieceBoard(startPos = nextPieceBoardPos)
+  }
+
+  method setLines(value) { linesBoard.setValue(value) }
+  method setPoints(value) { pointsBoard.setValue(value) }
+  method setLevel(value) { levelBoard.setValue(value) }
+  method displayPiece(data) { nextPieceBoard.display(data) }
+
+  method updateUI(points, linesCompleted, level) {
+    self.setPoints(points)
+    self.setLines(linesCompleted)
+    self.setLevel(level)
   }
 }
 
-class UIPanel {
+class UIPieceBoard{
+  const property startPos
 
+  const property blocks = []
+
+  method display(data) {
+    var i
+    4.times({ _i => i = _i - 1
+      const shape = data.displayShape().get(i)
+
+      if (blocks.size() != 4) { // If still uninitialized create the blocks
+        const newBlock = new Block(
+          position = game.at(startPos.x() + shape.x() , startPos.y() + shape.y()),
+          sprite = data.sprite()
+        )
+        blocks.add(newBlock)
+      } else { // Else only modify them
+        const block = blocks.get(i)
+        block.tp(startPos.x() + shape.x() , startPos.y() + shape.y())
+        block.setSprite(data.sprite())
+      }
+    })
+  }
 }
 
-class Keys
-{
-  const property up = keyboard.w()
-  const property down = keyboard.s()
-  const property left = keyboard.a()
-  const property right = keyboard.d()
-  const property store = keyboard.q()
+class UINumberBoard {
+  const property startPos
+  const property size
+  var property numberList = []
+  var property value = 0
+
+  method initialize() {
+    size.times({i => numberList.add(new UINumber(
+      position = game.at(startPos.x() + numberList.size(), startPos.y())
+    ))})
+    numberList = numberList.reverse() // Reverse for more clear iteration
+  }
+
+  method setValue(newValue) {
+    // Coerce to nearest displayable value
+    if      (newValue > (10 ** size)) { value = (10 ** size) - 1 }
+    else if (newValue < 0           ) { value = 0 }
+    else                              { value = newValue }
+
+    const valueArray = utils.numberToArray(value)
+    (size - valueArray.size()).times({i => valueArray.add(0)})
+    // console.println("Original Value: " + newValue + " | Parsed Array: " + valueArray)
+
+    var i
+    size.times({ _i => i = _i - 1
+      numberList.get(i).setValue(valueArray.get(i))
+    })
+  }
 }
 
+class UINumber inherits GameObject{
+  method initialize() { game.addVisual(self); self.setValue(0) }
+
+  method setValue(value) { self.setSprite(sprites.getNumber(value)) }
+}
+
+// ||||||||||||||PLAYER|||||||||||||||||||
 class Player
 {
   const keys
@@ -257,10 +397,7 @@ class Player
     self.setControls()
     self.pullPiece()
 
-    // game.onTick(500, "gravity", {
-    //   activePiece.move(0,-1)
-    //   if(activePiece.settled()) { self.pullPiece() }
-    // })
+    game.onTick(640, "gravity", { self.onGravity() })
   }
 
   method onGravity() {
@@ -269,6 +406,11 @@ class Player
       activePiece.checkAffectedLines()
       self.pullPiece()
     }
+  }
+  
+  method updateGravity(ms) {
+    game.removeTickEvent("gravity")
+    game.onTick(ms, "gravity", { self.onGravity() })
   }
 
   method pullPiece() {
@@ -282,6 +424,8 @@ class Player
       data = shape,
       board = self.board()
     )
+
+    board.uiPanel().displayPiece(piecePool.first())
   }
 
   method setControls() {
@@ -289,7 +433,5 @@ class Player
     keys.right().onPressDo({activePiece.move(1,0)})
     keys.down().onPressDo({self.onGravity()})
     keys.up().onPressDo({activePiece.rotate()})
-
-    //keys.store().onPressDo({self.store()})
   }
 }

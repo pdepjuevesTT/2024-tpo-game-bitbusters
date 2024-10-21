@@ -10,38 +10,21 @@ program TetrisWollok {
   game.boardGround(sprites.background())
   game.start()
 	
-  game.addVisual(new GameObject(sprite = sprites.borders()))
+  new GameObject(sprite = sprites.borders())
 	
   const board1 = new Board(downPin = game.at(1, 1), upPin = game.at(11, 21))
   const board2 = new Board(downPin = game.at(17, 1), upPin = game.at(27, 21))
 
-  const wasdKeys = new Keys(
-    up = keyboard.w(),
-    down = keyboard.s(),
-    left = keyboard.a(),
-    right = keyboard.d(),
-    store = keyboard.q()
-  )
-
-  const arrowKeys = new Keys(
-    up = keyboard.up(),
-    down = keyboard.down(),
-    left = keyboard.left(),
-    right = keyboard.right(),
-    store = keyboard.del()
-  )
-
   const player1 = new Player(
 	  board = board1,
-    keys = wasdKeys
+    keys = keybinds.wasd()
   )
 
   keyboard.b().onPressDo({player1.onGravity()})
 
-
   // const player2 = new Player(
   //   board = board2,
-  //   keys = arrowKeys
+  //   keys = keybinds.arrows()
   // )
 
 }
