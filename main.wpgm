@@ -4,9 +4,5 @@ import classes.*
 import gameManager.*
 
 program TetrisWollok {
-  // Config Wollok Game
-  gameManager.configGame()
-	
-  // Handle Main Menu
-  gameManager.startMainMenu()
+  gameManager.start()
 }

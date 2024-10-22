@@ -1,3 +1,4 @@
+import gameManager.*
 import constants.*
 
 // ||||||||||||||GAMEOBJECT|||||||||||||||||||
@@ -120,11 +121,14 @@ class Tetromino inherits BlockSet
   // ---------- SETTLE AND CLEAR LINES ----------
 
   method settlePiece() {
+    var shouldLose = false
     blocks.forEach({ block =>
       const relativePos = board.getRelativePosition(block.position())
-      board.setValue(relativePos.y(), relativePos.x(), block)
+      if(relativePos.y() >= board.height()) { shouldLose = true; game.removeVisual(block) }
+      else { board.setValue(relativePos.y(), relativePos.x(), block) }
     })
-    settled = true
+    if(shouldLose) { board.onLoseGame() }
+    else { settled = true }
   }
 
   method checkAffectedLines() {
@@ -149,8 +153,8 @@ class Tetromino inherits BlockSet
     var dy
 
     var blocked = false
-    var newPositions = []
-    var newRelPositions = []
+    const newPositions = []
+    const newRelPositions = []
 
     blocks.forEach({ block =>
       dx = block.position().x() - pivot.position().x()
@@ -233,6 +237,11 @@ class Board
 
   var property bitmap = []
 
+  var property points = 0
+  var property linesCompleted = 0
+  var property level = 1
+
+  var property uiPanel = null
 
   method initialize() {
     height.times({i => bitmap.add(new Line(index = i-1, board = self, size = width))})
@@ -282,11 +291,12 @@ class Board
     player.updateGravity(newTickMs)
   }
 
-  var property points = 0
-  var property linesCompleted = 0
-  var property level = 1
+  var gameOverCard = null
 
-  var property uiPanel = null
+  method onLoseGame() {
+    gameOverCard = new GameObject(sprite = sprites.playerLost(), position = self.downPin())
+    player.onLostGame()
+  }
 }
 
 // ||||||||||||||UIPANEL|||||||||||||||||||
@@ -392,12 +402,19 @@ class Player
   var property piecePool = tetrominos.shuffle()
 
   var property activePiece = new Object()
+  var property lost = false
 
   method initialize() {
     self.setControls()
     self.pullPiece()
-
+    board.setPlayer(self)
     game.onTick(640, "gravity", { self.onGravity() })
+  }
+
+  method onLostGame() {
+    lost = true
+    self.removeGravity()
+    gameManager.onPlayerLost()
   }
 
   method onGravity() {
@@ -409,9 +426,11 @@ class Player
   }
   
   method updateGravity(ms) {
-    game.removeTickEvent("gravity")
+    self.removeGravity()
     game.onTick(ms, "gravity", { self.onGravity() })
   }
+
+  method removeGravity() { game.removeTickEvent("gravity") }
 
   method pullPiece() {
     const shape = piecePool.first()
@@ -429,9 +448,9 @@ class Player
   }
 
   method setControls() {
-    keys.left().onPressDo({activePiece.move(-1,0)})
-    keys.right().onPressDo({activePiece.move(1,0)})
-    keys.down().onPressDo({self.onGravity()})
-    keys.up().onPressDo({activePiece.rotate()})
+    keys.left().onPressDo({ if(!lost) { activePiece.move(-1,0) }})
+    keys.right().onPressDo({ if(!lost) { activePiece.move(1,0) }})
+    keys.down().onPressDo({ if(!lost) { self.onGravity() }})
+    keys.up().onPressDo({ if(!lost) { activePiece.rotate() }})
   }
 }

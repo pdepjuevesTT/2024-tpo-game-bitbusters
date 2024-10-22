@@ -2,6 +2,18 @@ import classes.*
 import constants.*
 
 object gameManager {
+  // ----------MAIN SCRIPT----------------
+
+  method start() {
+    // Config Wollok Game
+    self.configGame()
+	
+    // Handle Main Menu
+    self.startMainMenu()
+  }
+
+  // ----------BASIC CONFIGS-------------
+
   method configGame() {
     game.title("Tetris Wollok")
     game.height(22)
@@ -11,6 +23,8 @@ object gameManager {
     game.start()
   }
 
+  // ----------GAMESTATE-------------
+
   const gameState = object {
     const property mainMenu = 0
     const property playingGame = 1
@@ -18,6 +32,8 @@ object gameManager {
   }
   
   var currentGameState = null
+
+  // ----------MAIN MENU-------------
 
   var mainMenuBorder = null
   var mainMenuArrow = null
@@ -42,7 +58,7 @@ object gameManager {
     keybinds.arrows().up().onPressDo({ if(currentGameState == gameState.mainMenu()) self.toogleMultiplayer() })
     keybinds.arrows().down().onPressDo({ if(currentGameState == gameState.mainMenu()) self.toogleMultiplayer() })
 
-    keyboard.space().onPressDo({ if(currentGameState == gameState.mainMenu()) { self.removeMainMenu(); self.startGame() }})
+    keyboard.space().onPressDo({ if(currentGameState == gameState.mainMenu()) { self.removeMainMenu(); self.startMainGame() }})
   }
 
   method removeMainMenu() {
@@ -50,26 +66,39 @@ object gameManager {
     game.removeVisual(mainMenuArrow)
   }
 
+  // ----------MAIN GAME-------------
+
   var gameBorder = null
 
-  method startGame() {
-    if(multiplayer) { console.println("STARTING VERSUS GAME...") }
-    else { console.println("STARTING SOLO GAME") }
+  var player1 = null
+  var player2 = null
+
+  method startMainGame() {
+    currentGameState = gameState.playingGame()
 
     gameBorder = new GameObject(sprite = sprites.borders())
 	
-    const board1 = new Board(downPin = game.at(1, 1), upPin = game.at(11, 21))
-    const player1 = new Player(
-	    board = board1,
+    player1 = new Player(
+	    board = new Board(downPin = game.at(1, 1), upPin = game.at(11, 21)),
       keys = keybinds.wasd()
     )
 
     if(multiplayer) {
-      const board2 = new Board(downPin = game.at(17, 1), upPin = game.at(27, 21))
-      const player2 = new Player(
-        board = board2,
+      player2 = new Player(
+        board = new Board(downPin = game.at(17, 1), upPin = game.at(27, 21)),
         keys = keybinds.arrows()
       )
     }
   }
+
+  method onPlayerLost() {
+    if(!multiplayer) { self.endMainGame() }
+    else if (player1.lost() && player2.lost()) { self.endMainGame() }
+  }
+
+  method endMainGame() {
+    game.allVisuals().forEach({visual => game.removeVisual(visual)})
+  }
+
+  // ----------END SCREEN-------------
 }

@@ -50,6 +50,7 @@ object sprites {
   const property borders = "tetris-borders.png"
   const property mainMenu = "tetris-mainMenu.png"
   const property arrow = "tetris-arrow.png"
+  const property playerLost = "tetris-playerLost.png"
   const property blue = "tetris-blue.png"
   const property cyan = "tetris-cyan.png"
   const property grey = "tetris-grey.png"
