@@ -404,11 +404,13 @@ class Player
   var property activePiece = new Object()
   var property lost = false
 
+  const gravityEvent = "gravity-" + board.downPin().x().toString()
+
   method initialize() {
     self.setControls()
     self.pullPiece()
     board.setPlayer(self)
-    game.onTick(640, "gravity", { self.onGravity() })
+    game.onTick(640, gravityEvent, { self.onGravity() })
   }
 
   method onLostGame() {
@@ -427,10 +429,10 @@ class Player
   
   method updateGravity(ms) {
     self.removeGravity()
-    game.onTick(ms, "gravity", { self.onGravity() })
+    game.onTick(ms, gravityEvent, { self.onGravity() })
   }
 
-  method removeGravity() { game.removeTickEvent("gravity") }
+  method removeGravity() { game.removeTickEvent(gravityEvent) }
 
   method pullPiece() {
     const shape = piecePool.first()
