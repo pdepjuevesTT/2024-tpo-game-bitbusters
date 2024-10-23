@@ -1,4 +1,4 @@
-### [English Version](./README.md)
+### [See English Version](./README.md)
 
 # Tetris
 
