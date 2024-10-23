@@ -99,8 +99,6 @@ object gameManager {
 
     if(firstCycle) { gameBorder = new GameObject(sprite = sprites.borders()) }
     else { game.addVisual(gameBorder) }
-
-    if(firstCycle) { keyboard.p().onPressDo({ self.tooglePause() })}
 	
     player1 = new Player(
 	    board = new Board(downPin = game.at(1, 1), upPin = game.at(11, 21)),

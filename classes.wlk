@@ -55,7 +55,7 @@ class BlockSet
         else           { newRelP = board.getRelativePosition(game.at(block.position().x(), newP)) }
 
         collision = (newP < minimum || newP > maximum)
-        if(!collision && newRelP.y() != board.height()) { collision = (board.bitmap().get(newRelP.y()).blocks().get(newRelP.x()) != 0) }
+        if(!collision && newRelP.y() < board.height()) { collision = (board.bitmap().get(newRelP.y()).blocks().get(newRelP.x()) != 0) }
       }
     })
 
@@ -130,9 +130,17 @@ class Tetromino inherits BlockSet
     blocks.forEach({ block =>
       affectedLines.add(board.getRelativePosition(block.position()).y())
     })
-    
+
+    const orderedLines = []
+    var max
+    affectedLines.forEach({ index =>
+      max = affectedLines.max()
+      orderedLines.add(max)
+      affectedLines.remove(max)
+    })
+
     var clearedLines = 0
-    affectedLines.forEach({ lineIndex => 
+    orderedLines.forEach({ lineIndex => 
       if(board.checkLine(lineIndex)) clearedLines += 1
     })
 
@@ -169,7 +177,8 @@ class Tetromino inherits BlockSet
         newRelPos = newRelPositions.get(i)
 
         blocked = 
-            newPos.x() < board.downPin().x()
+            newRelPos.y() >= board.height()
+        ||  newPos.x() < board.downPin().x()
         ||  newPos.x() > board.upPin().x() - 1
         ||  newPos.y() < board.downPin().y()
         ||  newPos.y() > board.upPin().y() + 1
@@ -230,6 +239,21 @@ class Board
   var property height = upPin.y() - downPin.y()
 
   var property bitmap = []
+
+  method logBitmap() {
+    var msg = ""
+
+    bitmap.reverse().forEach({ line => 
+      msg += ""
+      line.blocks().forEach({ block => 
+        if(block != 0) { msg += "◼"}
+        else { msg += "◻" }
+      })
+      msg += ""
+      console.println(msg)
+      msg = ""
+    })
+  }
 
   var property points = 0
   var property linesCompleted = 0
@@ -396,7 +420,6 @@ class UINumberBoard {
 
     const valueArray = utils.numberToArray(value)
     (size - valueArray.size()).times({i => valueArray.add(0)})
-    // console.println("Original Value: " + newValue + " | Parsed Array: " + valueArray)
 
     var i
     size.times({ _i => i = _i - 1

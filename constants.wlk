@@ -12,8 +12,6 @@ object utils {
     const numberArray = []
     stringArray.forEach({ char => numberArray.add(self.charToInt(char)) })
     
-    //console.println("Original Value: " + number + " | Parsed String Array: " + stringArray + " | Parsed Number Array: " + numberArray)
-    
     return numberArray.reverse()
   }
 
