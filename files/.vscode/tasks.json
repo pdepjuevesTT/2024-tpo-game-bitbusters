@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "pwsh-run",
+      "type": "shell",
+      "command": "\".\\wollok.exe\" run -g 'main.TetrisWollok' --skipValidations -p F:/WollokTetris",
+      "problemMatcher": []
+    },
+    {
+      "label": "cmd-run",
+      "type": "shell",
+      "command": "\"\"wollok\" run -g \"main.TetrisWollok\" --skipValidations -p \"F:\\WollokTetris\"\"",
+      "problemMatcher": []
+    },
+    {
+      "label": "home-run",
+      "type": "shell",
+      "command": "\"\"wollok\" run -g \"main.TetrisWollok\" --skipValidations -p \"D:\\UTN\\ParadigmasdeProgramación\\WollokTetris\"",
+      "problemMatcher": []
+    }
+  ]
+}

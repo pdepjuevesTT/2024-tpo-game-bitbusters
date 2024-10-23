@@ -1,0 +1,8 @@
+import wollok.game.*
+import constants.*
+import classes.*
+import gameManager.*
+
+program TetrisWollok {
+  gameManager.start()
+}
