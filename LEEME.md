@@ -2,8 +2,7 @@
 
 Henk Rogers discutió enérgicamente con Minoru Arakawa, fundador y entonces presidente de Nintendo of America, para que incluyera Tetris en la caja de la Game Boy.
 
-> "Si querés venderle la Game Boy a **miles de niños**, que venga con el Mario. Pero si querés venderle la Game Boy a **millones de personas**, tiene que venir con el *Tetris*.”
-
+> “Si querés venderle la Game Boy a **miles de niños**, que venga con el Mario. Pero si querés venderle la Game Boy a **millones de personas**, tiene que venir con el *Tetris*.”
 
 ___
 
@@ -19,7 +18,7 @@ Si esta instalación se realiza en Windows 10 o superior, no es necesario instal
 Si esta instalación se realiza en cualquier otro sistema operativo, entonces probablemente puedas encontrar tu camino sin ayuda.
 
 ### **3 ) Preparación del entorno:**
-Una vez tenemos nuestra carpeta con los archivos del juego lo único que hace falta antes de poder jugar es extraer el ejecutable de Wollok que se utiliza para ejecutar el programa.
+Una vez tenemos nuestra carpeta con los archivos del juego, lo único que hace falta antes de poder jugar es extraer el ejecutable de Wollok que se utiliza para ejecutar el programa.
 
 Dentro de la carpeta **"files"** se encuentra un archivo **"wollok.zip"** :
 
@@ -27,7 +26,7 @@ Hay que descomprimir el archivo y colocar el ejecutable **"wollok.exe"** en la c
 
 La forma más sencilla de realizar esta tarea es con la función **"Extraer Aquí"** de la mayoría de programas de descompresión de archivos.
 
-### 4 ) Jugar:
+### **4 ) Jugar:**
 Para ejecutar el juego tan solo hay que abrir el archivo **"runGame.bat"** que se encuentra en la carpeta raíz del juego.
 
 Automáticamente este programa abrirá una ventana de terminal y comenzará el juego en su navegador predeterminado.
@@ -42,12 +41,12 @@ Para cerrar el juego tan solo hay que cerrar la ventana de terminal y la pestañ
 - Jugador 1:
   - Desplazamiento Horizontal: **[A]** , **[D]**
   - Rotación: **[W]**
-  - Colocación de pieza: **[S]**
+  - Colocar pieza: **[S]**
 
 - Jugador 2:
   - Desplazamiento Horizontal: **[Flecha Izquierda]** , **[Flecha Derecha]**
   - Rotación: **[Flecha Arriba]**
-  - Colocación de pieza: **[Flecha Abajo]**
+  - Colocar pieza: **[Flecha Abajo]**
 
 - Confirmar Menú: **[Espacio]**
 
@@ -58,7 +57,7 @@ Ya sea jugando solo para buscar pasar el rato o batir un record, o jugando contr
 
 En la modalidad de uno contra uno "VERSUS", el ganador se decide por quien logre la mayor cantidad de puntos, incluso si el ganador es el primero en quedarse sin espacio en su tablero.
 
-> "El que ríe último ríe mejor, salvo que no tenga suficientes puntos, si no puede ser que el otro ría más."  
+> “El que ríe último ríe mejor, salvo que no tenga suficientes puntos, si no puede ser que el otro ría más.”  
 > \- Sun Tsu, El Arte Del Tetris
 
 ## Capturas
@@ -81,7 +80,7 @@ ___
 - Santiago De Franceschi
 - Franco Alanoca Villarreal
 
-## Otros
+## Más Información:
 
 - Realizado en la UTN, durante la cursada de Paradigmas de Programación (curso k2033)
 - Una vez terminado, no tenemos problemas en que el repositorio sea público
