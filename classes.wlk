@@ -23,12 +23,6 @@ class GameObject
   method image() = self.sprite()
 }
 
-// ||||||||||||||BLOCK|||||||||||||||||||
-class Block inherits GameObject
-{
-
-}
-
 // ||||||||||||||BLOCKSET|||||||||||||||||||
 class BlockSet
 {
@@ -88,7 +82,7 @@ class Tetromino inherits BlockSet
     4.times({i => 
       const index = i - 1
       const shape = data.shape().get(index)
-      const newBlock = new Block(
+      const newBlock = new GameObject(
         position = game.at(position.x() + shape.x() , position.y() + shape.y()),
         sprite = data.sprite()
       )
@@ -245,7 +239,11 @@ class Board
 
   method initialize() {
     height.times({i => bitmap.add(new Line(index = i-1, board = self, size = width))})
-    uiPanel = new UIPanel(topLeftPin = game.at(upPin.x() + 1, upPin.y() - 1))
+    uiPanel = new UIPanel(
+      topLeftPin = game.at(upPin.x() + 1, upPin.y() - 1),
+      spacing = 3,
+      hasPieceBoard = true
+    )
     uiPanel.updateUI(points, linesCompleted, level)
   }
 
@@ -302,22 +300,28 @@ class Board
 // ||||||||||||||UIPANEL|||||||||||||||||||
 class UIPanel {
   const property topLeftPin
+  const property spacing
+  const property hasPieceBoard
 
-  var property linesBoard = new Object()
-  var property pointsBoard = new Object()
-  var property levelBoard = new Object()
-  var property nextPieceBoard = new Object()
+  var property linesBoard = null
+  var property pointsBoard = null
+  var property levelBoard = null
+  var property nextPieceBoard = null
 
   method initialize() {
-    const linesBoardPos = game.at(topLeftPin.x(), topLeftPin.y() - 1)
-    const pointsBoardPos = game.at(topLeftPin.x(), topLeftPin.y() - 4)
-    const levelBoardPos = game.at(topLeftPin.x(), topLeftPin.y() - 7)
-    const nextPieceBoardPos = game.at(topLeftPin.x(), topLeftPin.y() - 12)
+    const startingHeight = topLeftPin.y() - 1
+    const linesBoardPos = game.at(topLeftPin.x(), startingHeight)
+    const pointsBoardPos = game.at(topLeftPin.x(), startingHeight - spacing)
+    const levelBoardPos = game.at(topLeftPin.x(), startingHeight - (2 * spacing))
 
     linesBoard = new UINumberBoard(startPos = linesBoardPos, size = 4)
     pointsBoard = new UINumberBoard(startPos = pointsBoardPos, size = 4)
     levelBoard = new UINumberBoard(startPos = levelBoardPos, size = 4)
-    nextPieceBoard = new UIPieceBoard(startPos = nextPieceBoardPos)
+
+    if(hasPieceBoard) {
+      const nextPieceBoardPos = game.at(topLeftPin.x(), topLeftPin.y() - (4 * spacing))
+      nextPieceBoard = new UIPieceBoard(startPos = nextPieceBoardPos)
+    }
   }
 
   method setLines(value) { linesBoard.setValue(value) }
@@ -343,7 +347,7 @@ class UIPieceBoard{
       const shape = data.displayShape().get(i)
 
       if (blocks.size() != 4) { // If still uninitialized create the blocks
-        const newBlock = new Block(
+        const newBlock = new GameObject(
           position = game.at(startPos.x() + shape.x() , startPos.y() + shape.y()),
           sprite = data.sprite()
         )
@@ -401,7 +405,7 @@ class Player
   const property board
   var property piecePool = tetrominos.shuffle()
 
-  var property activePiece = new Object()
+  var property activePiece = null
   var property lost = false
 
   const gravityEvent = "gravity-" + board.downPin().x().toString()

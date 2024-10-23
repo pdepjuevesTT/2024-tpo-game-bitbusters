@@ -47,10 +47,17 @@ object sounds {
 
 object sprites {
   const property background = "tetris-background.png"
-  const property borders = "tetris-borders.png"
+
   const property mainMenu = "tetris-mainMenu.png"
   const property arrow = "tetris-arrow.png"
   const property playerLost = "tetris-playerLost.png"
+
+  const property gameOverSingleplayer = "tetris-gameOverSingleplayer.png"
+  const property gameOverMultiplayer = "tetris-gameOverMultiplayer.png"
+  const property big1 = "tetris-big1.png"
+  const property big2 = "tetris-big2.png"
+
+  const property borders = "tetris-borders.png"
   const property blue = "tetris-blue.png"
   const property cyan = "tetris-cyan.png"
   const property grey = "tetris-grey.png"
@@ -59,13 +66,14 @@ object sprites {
   const property purple = "tetris-purple.png"
   const property red = "tetris-red.png"
   const property yellow = "tetris-yellow.png"
-  const property empty = "empty.png"
 
   method getNumber(value) {
     if(value < 0 || value > 10) { return "" }
 
     return "tetris-" + value.coerceToInteger().toString() + ".png"
   }
+
+  const property empty = "empty.png"
 }
 
 object tetrominos {
