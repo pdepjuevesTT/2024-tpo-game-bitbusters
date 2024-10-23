@@ -1,3 +1,5 @@
+### [English Version](./README.md)
+
 # Tetris
 
 Henk Rogers discutió enérgicamente con Minoru Arakawa, fundador y entonces presidente de Nintendo of America, para que incluyera Tetris en la caja de la Game Boy.

@@ -1,3 +1,5 @@
+### [Ver la Versión en Español](./LEEME.md)
+
 # Tetris
 
 Henk Rogers argued vigorously with Minoru Arakawa, founder and then president of Nintendo of America, to include Tetris in the Game Boy box.
