@@ -82,11 +82,25 @@ object gameManager {
   var player1 = null
   var player2 = null
 
+  var paused = false
+  method tooglePause() {
+    if ( paused ) { 
+      player1.updateGravity(player1.currentGravityMS())
+      if(multiplayer) player2.updateGravity(player2.currentGravityMS())
+    } else {
+      player1.removeGravity()
+      if(multiplayer) player2.removeGravity()
+    }
+    paused = !paused
+  }
+
   method startMainGame() {
     currentGameState = gameState.playingGame()
 
     if(firstCycle) { gameBorder = new GameObject(sprite = sprites.borders()) }
     else { game.addVisual(gameBorder) }
+
+    if(firstCycle) { keyboard.p().onPressDo({ self.tooglePause() })}
 	
     player1 = new Player(
 	    board = new Board(downPin = game.at(1, 1), upPin = game.at(11, 21)),

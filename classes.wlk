@@ -251,6 +251,20 @@ class Board
 
   method setValue(lineIndex, blockIndex, value) = bitmap.get(lineIndex).setValue(blockIndex, value)
 
+  method getTopMostIndex(column) {
+    const blockHeights = []
+    var elem
+    bitmap.forEach({ line =>
+      elem = line.blocks().get(column)
+      if(elem != 0) {
+        blockHeights.add(elem.position().y() - downPin.y())
+      }
+    })
+
+    if(blockHeights.size() > 0) { return blockHeights.max() }
+    else { return -1 }
+  }
+
   method checkLine(index) {
     const line = bitmap.get(index)
 
@@ -285,7 +299,7 @@ class Board
   method setPlayer(playerRef) { player = playerRef }
 
   method updateTickSpeed() {
-    const newTickMs = 700 - (0.6 * level)
+    const newTickMs = 700 - (60 * level)
     player.updateGravity(newTickMs)
   }
 
@@ -409,12 +423,13 @@ class Player
   var property lost = false
 
   const gravityEvent = "gravity-" + board.downPin().x().toString()
+  var property currentGravityMS = 640
 
   method initialize() {
     self.setControls()
     self.pullPiece()
     board.setPlayer(self)
-    game.onTick(640, gravityEvent, { self.onGravity() })
+    game.onTick(currentGravityMS, gravityEvent, { self.onGravity() })
   }
 
   method onLostGame() {
@@ -430,9 +445,27 @@ class Player
       self.pullPiece()
     }
   }
+
+  method fullDrop() {
+    var affectedColumn
+    var topMostIndex
+    const fullDropDistances = []
+    activePiece.blocks().forEach({ block => 
+      affectedColumn = block.position().x() - board.downPin().x()
+      topMostIndex = board.getTopMostIndex(affectedColumn)
+      fullDropDistances.add((block.position().y() - board.downPin().y()) - topMostIndex - 1)
+    })
+
+    var min = fullDropDistances.first()
+    fullDropDistances.forEach({ distance => if (distance < min) { min = distance }})
+    
+    activePiece.move(0, -min)
+    self.onGravity()
+  }
   
   method updateGravity(ms) {
     self.removeGravity()
+    currentGravityMS = ms
     game.onTick(ms, gravityEvent, { self.onGravity() })
   }
 
@@ -456,7 +489,7 @@ class Player
   method setControls() {
     keys.left().onPressDo({ if(!lost) { activePiece.move(-1,0) }})
     keys.right().onPressDo({ if(!lost) { activePiece.move(1,0) }})
-    keys.down().onPressDo({ if(!lost) { self.onGravity() }})
+    keys.down().onPressDo({ if(!lost) { self.fullDrop() }})
     keys.up().onPressDo({ if(!lost) { activePiece.rotate() }})
   }
 }
